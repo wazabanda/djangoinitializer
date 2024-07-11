@@ -1,0 +1,5 @@
+Metadata-Version: 2.1
+Name: django-init
+Version: 0.1
+Requires-Dist: colorama==0.4.6
+Requires-Dist: simple-term-menu==1.6.4

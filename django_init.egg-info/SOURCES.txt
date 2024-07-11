@@ -1,0 +1,10 @@
+setup.py
+django_init.egg-info/PKG-INFO
+django_init.egg-info/SOURCES.txt
+django_init.egg-info/dependency_links.txt
+django_init.egg-info/entry_points.txt
+django_init.egg-info/requires.txt
+django_init.egg-info/top_level.txt
+django_initializer/__init__.py
+django_initializer/__main__.py
+django_initializer/initializer.py
