@@ -67,18 +67,31 @@ def select_project_addons():
 
 def create_django_project(project_name,project_directory,project_type,django_version=None):
     
+    working_directory = ""
     # install django
     print(f"{Fore.GREEN}Installing django{Fore.BLACK}")
 
-    subprocess.run(f"python -m pip install Django")
+    subprocess.run(["python", "-m", "pip", "install", "Django"])
 
     print(f"{Fore.GREEN}Creating django project{Fore.BLACK}")
     
-    create_prject_command = f"django-admin startproject {project_name}"
+    create_project_command = f"django-admin startproject {project_name}"
     if project_directory != None:
-        pass
+        create_project_command += f" {project_directory}"
+        working_directory = project_directory
+
+        if working_directory == '.':
+            working_directory = os.getcwd()
+    else:
+        working_directory = os.path.join(".",project_name)
 
 
+    subprocess.run(create_project_command.split())
+
+    print(f"Project is in {working_directory}")
+    
+
+    
 
 
 def main(args=None):
@@ -105,6 +118,7 @@ def main(args=None):
 
     print(f"initializing {project_name} at {project_directory}")
 
+    create_django_project(project_name,project_directory,project_type)
     
     # initializing project
 
