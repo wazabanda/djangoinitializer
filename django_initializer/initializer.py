@@ -75,7 +75,8 @@ def create_django_project(project_name,project_directory,project_type,django_ver
     print(f"{Fore.GREEN}Creating django project{Fore.BLACK}")
     
     create_prject_command = f"django-admin startproject {project_name}"
-    if project_directory != None
+    if project_directory != None:
+        pass
 
 
 
