@@ -1,2 +1,3 @@
+astor==0.8.1
 colorama==0.4.6
 simple-term-menu==1.6.4

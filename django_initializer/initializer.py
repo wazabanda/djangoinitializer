@@ -89,6 +89,15 @@ def create_django_project(project_name,project_directory,project_type,django_ver
     subprocess.run(create_project_command.split())
 
     print(f"Project is in {working_directory}")
+
+    create_core_app_prompt = input(f"{Fore.GREEN}Do You want to create a core app (default)[Y]es or [N]o: {Fore.WHITE}")
+    if create_core_app_prompt in ["\n",''] or create_core_app_prompt.lower().startswith("y"):
+        command = "python manage.py startapp core".split()
+        subprocess.run(command,cwd=working_directory)
+
+
+
+    return working_directory
     
 
     
