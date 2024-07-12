@@ -1,9 +1,10 @@
 import os
 import subprocess
 import argparse
+import requests
 from simple_term_menu import TerminalMenu
 from colorama import init,Fore,Back, Style
-
+from .code_helper import modify_or_add_file, get_file_values
 
 init(autoreset=True)
 
@@ -65,6 +66,48 @@ def select_project_addons():
     return select_addons_indices
 
 
+def create_statics(project_name,project_directory):
+
+    to_append = """
+
+import os
+STATICFILES_DIRS = [
+    BASE_DIR/"staticfiles",
+]
+
+STATIC_URL = "/static/"
+STATIC_ROOT = "static/"
+MEDIA_ROOT = BASE_DIR/'media/'
+MEDIA_URL = '/media/'
+
+    """
+
+    folder_to_create = ["staticfiles","static","media","templates"] # todo move to config
+    static_sub_dirs = ['js','css','img'] # todo move to config
+
+    static_path = ""
+    for folder in folder_to_create:
+        path = os.path.join(project_directory,folder)
+        if folder == "static":
+            static_path = path
+        os.mkdir(path)
+
+    for folder in static_sub_dirs:
+        os.mkdir(os.path.join(static_path,folder))
+
+def get_htmx(project_name,project_directory):
+    
+    HTMX_UNPKG_URL = "https://unpkg.com/htmx.org/dist/htmx.min.js" # todo move to configs
+    print(f"f{Fore.YELLOW} {Style.BRIGHT} Adding HTMX You have amazing tastes!! {Fore.RESET} {Style.RESET_ALL}")
+    contents = requests.get(HTMX_UNPKG_URL).text
+
+    path = os.path.join(project_directory,"static",'js','htmx.min.js')
+    with open(path,'w') as f:
+        f.write(contents)
+    
+
+
+
 def create_django_project(project_name,project_directory,project_type,django_version=None):
     
     working_directory = ""
@@ -94,6 +137,12 @@ def create_django_project(project_name,project_directory,project_type,django_ver
     if create_core_app_prompt in ["\n",''] or create_core_app_prompt.lower().startswith("y"):
         command = "python manage.py startapp core".split()
         subprocess.run(command,cwd=working_directory)
+        
+        settings_path = os.path.join(working_directory,project_name,'settings.py')
+
+        installed_apps = get_file_values(settings_path,"INSTALLED_APPS")
+        installed_apps.append('core')
+        modify_or_add_file(settings_path,"INSTALLED_APPS",installed_apps)
 
 
 
@@ -127,7 +176,8 @@ def main(args=None):
 
     print(f"initializing {project_name} at {project_directory}")
 
-    create_django_project(project_name,project_directory,project_type)
+    # create the project
+    project_directory = create_django_project(project_name,project_directory,project_type)
     
     # initializing project
 

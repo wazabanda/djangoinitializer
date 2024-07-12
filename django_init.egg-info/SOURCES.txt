@@ -7,4 +7,5 @@ django_init.egg-info/requires.txt
 django_init.egg-info/top_level.txt
 django_initializer/__init__.py
 django_initializer/__main__.py
+django_initializer/code_helper.py
 django_initializer/initializer.py
