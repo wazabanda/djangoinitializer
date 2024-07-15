@@ -1,5 +1,6 @@
 import ast,astor
 import os
+import parso
 
 """ 
 This file contains the code needed to modify the varibles in a python file
@@ -62,31 +63,27 @@ def _ast_to_python(node):
         return None
 
 
-def modify_or_add_file(settings_path, variable, new_value):
+def modify_or_add_setting(settings_path, variable, new_value):
     with open(settings_path, 'r') as file:
-        tree = ast.parse(file.read(), filename=settings_path)
+        code = file.read()
+        module = parso.parse(code)
 
     found = False
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Assign):
-            for target in node.targets:
-                if isinstance(target, ast.Name) and target.id == variable:
-                    node.value = _python_to_ast(new_value)
-                    found = True
-                    break
+    for node in module.children:
+        if isinstance(node, parso.python.tree.ExprStmt) and node.get_defined_names():
+            name = node.get_defined_names()[0].value
+            if name == variable:
+                new_code = f"{variable} = {repr(new_value)}"
+                node.children[-1].value = new_code
+                found = True
+                break
 
     if not found:
-        new_node = ast.Assign(
-            targets=[ast.Name(id=variable, ctx=ast.Store())],
-            value=_python_to_ast(new_value)
-        )
-        tree.body.append(new_node)
-
-    modified_code = astor.to_source(tree)
+        new_code = f"\n{variable} = {repr(new_value)}\n"
+        module.children.append(parso.parse(new_code).children[0])
 
     with open(settings_path, 'w') as file:
-        file.write(modified_code)
-
+        file.write(module.get_code())
 
 
 def _python_to_ast(value):
@@ -105,4 +102,6 @@ def _python_to_ast(value):
         return ast.Dict(keys=keys, values=values)
     else:
         raise ValueError(f"Unsupported value type: {type(value)}")
+
+
 

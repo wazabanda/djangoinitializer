@@ -4,7 +4,7 @@ import argparse
 import requests
 from simple_term_menu import TerminalMenu
 from colorama import init,Fore,Back, Style
-from .code_helper import modify_or_add_file, get_file_values
+from code_helper import modify_or_add_setting, get_file_values
 
 init(autoreset=True)
 
@@ -66,7 +66,7 @@ def select_project_addons():
     return select_addons_indices
 
 
-def create_statics(project_name,project_directory):
+def create_static_folders(project_name,project_directory):
 
     to_append = """
 
@@ -142,7 +142,7 @@ def create_django_project(project_name,project_directory,project_type,django_ver
 
         installed_apps = get_file_values(settings_path,"INSTALLED_APPS")
         installed_apps.append('core')
-        modify_or_add_file(settings_path,"INSTALLED_APPS",installed_apps)
+        modify_or_add_setting(settings_path,"INSTALLED_APPS",installed_apps)
 
 
 

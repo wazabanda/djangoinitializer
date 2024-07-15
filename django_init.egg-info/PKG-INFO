@@ -2,5 +2,11 @@ Metadata-Version: 2.1
 Name: django-init
 Version: 0.1
 Requires-Dist: astor==0.8.1
+Requires-Dist: certifi==2024.7.4
+Requires-Dist: charset-normalizer==3.3.2
 Requires-Dist: colorama==0.4.6
+Requires-Dist: idna==3.7
+Requires-Dist: parso==0.8.4
+Requires-Dist: requests==2.32.3
 Requires-Dist: simple-term-menu==1.6.4
+Requires-Dist: urllib3==2.2.2
