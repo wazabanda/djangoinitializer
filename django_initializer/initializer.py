@@ -4,7 +4,7 @@ import argparse
 import requests
 from simple_term_menu import TerminalMenu
 from colorama import init,Fore,Back, Style
-from code_helper import modify_or_add_setting, get_file_values
+from .code_helper import modify_or_add_setting, get_file_values
 
 init(autoreset=True)
 
@@ -63,10 +63,10 @@ def select_project_addons():
             cont = are_you_sure.lower().startswith('y')
     
     print(selected_addons_indices)
-    return select_addons_indices
+    return selected_addons_indices
 
 
-def create_static_folders(project_name,project_directory):
+def create_static_folders(project_name,project_directory,settings_path):
 
     to_append = """
 
@@ -92,9 +92,14 @@ MEDIA_URL = '/media/'
             static_path = path
         os.mkdir(path)
 
+    print(static_path)
+        
     for folder in static_sub_dirs:
         os.mkdir(os.path.join(static_path,folder))
 
+    with open(settings_path,'a') as settings:
+        settings.write(to_append)
+    
 def get_htmx(project_name,project_directory):
     
     HTMX_UNPKG_URL = "https://unpkg.com/htmx.org/dist/htmx.min.js" # todo move to configs
@@ -144,9 +149,9 @@ def create_django_project(project_name,project_directory,project_type,django_ver
         installed_apps.append('core')
         modify_or_add_setting(settings_path,"INSTALLED_APPS",installed_apps)
 
-
-
-    return working_directory
+    create_static_folders(project_name,working_directory,settings_path)
+    
+    return working_directory,settings_path
     
 
     
@@ -178,7 +183,13 @@ def main(args=None):
 
     # create the project
     project_directory = create_django_project(project_name,project_directory,project_type)
+    print(f"Including addons to project")
     
+    print(project_addons)
+    for index in project_addons:
+        print(f"> Adding {PROJECT_ADDONS[index]}")
+        if PROJECT_ADDONS[index] == 'htmx':
+            get_htmx(project_name,project_directory[0])
     # initializing project
 
     

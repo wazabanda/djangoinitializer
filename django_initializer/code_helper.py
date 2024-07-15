@@ -63,27 +63,42 @@ def _ast_to_python(node):
         return None
 
 
+
+
 def modify_or_add_setting(settings_path, variable, new_value):
     with open(settings_path, 'r') as file:
-        code = file.read()
-        module = parso.parse(code)
+        original_code = file.read()
 
+# Parse the original code into an AST
+    tree = ast.parse(original_code, filename=settings_path)
+
+# Find the target node to modify or add
     found = False
-    for node in module.children:
-        if isinstance(node, parso.python.tree.ExprStmt) and node.get_defined_names():
-            name = node.get_defined_names()[0].value
-            if name == variable:
-                new_code = f"{variable} = {repr(new_value)}"
-                node.children[-1].value = new_code
-                found = True
-                break
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Assign):
+            for target in node.targets:
+                if isinstance(target, ast.Name) and target.id == variable:
+                    # Modify the existing variable
+                    node.value = _python_to_ast(new_value)
+                    found = True
+                    break
 
+# If the variable doesn't exist, add a new assignment node
     if not found:
-        new_code = f"\n{variable} = {repr(new_value)}\n"
-        module.children.append(parso.parse(new_code).children[0])
+        new_node = ast.Assign(
+            targets=[ast.Name(id=variable, ctx=ast.Store())],
+            value=_python_to_ast(new_value)
+        )
+        tree.body.append(new_node)
 
+# Generate code from the modified AST
+    modified_code = astor.to_source(tree)
+
+# Write the modified code back to the file, preserving comments and formatting
     with open(settings_path, 'w') as file:
-        file.write(module.get_code())
+        file.write(modified_code)
+
+
 
 
 def _python_to_ast(value):
@@ -104,4 +119,20 @@ def _python_to_ast(value):
         raise ValueError(f"Unsupported value type: {type(value)}")
 
 
+def remove_setting(settings_path, variable):
+    with open(settings_path, 'r') as file:
+        code = file.read()
+        module = parso.parse(code)
 
+    new_children = []
+    for node in module.children:
+        if isinstance(node, parso.python.tree.ExprStmt) and node.get_defined_names():
+            name = node.get_defined_names()[0].value
+            if name == variable:
+                continue
+        new_children.append(node)
+
+    module.children = new_children
+
+    with open(settings_path, 'w') as file:
+        file.write(module.get_code())
