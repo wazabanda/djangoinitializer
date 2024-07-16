@@ -1,3 +1,4 @@
+from typing import List,Dict,Any
 import os
 import subprocess
 import argparse
@@ -5,6 +6,9 @@ import requests
 from simple_term_menu import TerminalMenu
 from colorama import init,Fore,Back, Style
 from .code_helper import modify_or_add_setting, get_file_values
+import shutil
+from importlib import resources
+from pathlib import Path
 
 init(autoreset=True)
 
@@ -20,6 +24,11 @@ project_core_app_name = "core"
 PROJECT_TYPES = ["[d] default","[r] django rest framework", "[n] django ninja"]
 PROJECT_TYPES_INSTALS = ["_","djangorestframework","django-ninja"]
 PROJECT_ADDONS = ["none","django auth","django all-auth","htmx","tailwind","bootstrap"]
+
+
+def create_directory(path):
+    if not os.path.exists(path):
+        os.mkdir(path)
 
 
 def main_template_selection():
@@ -62,11 +71,48 @@ def select_project_addons():
             are_you_sure = input("Continue with selection [Y]es or [N]o: ")
             cont = are_you_sure.lower().startswith('y')
     
-    print(selected_addons_indices)
-    return selected_addons_indices
+     # print(selected_addons_indices)
+    return terminal_menu.chosen_menu_entries
 
 
-def create_static_folders(project_name,project_directory,settings_path):
+def create_base_template(project_name,templates,addons,addon_statements):
+    
+    content = [] 
+    content
+    template_path = resources.files("django_initializer").joinpath('templates')
+    base_template_file = template_path.joinpath('global').joinpath('base.html')
+    with base_template_file.open('r') as f:
+        content = f.readlines()
+
+    SCRIPTS_IDENTIFIER = content.index( "<!--scripts-->\n")
+    HEAD_IDENTIFIER = content.index("<!--head-->\n")
+
+    for cont in addon_statements['head']:
+        content.insert(HEAD_IDENTIFIER,cont)
+    
+
+    for cont in addon_statements['scripts']:
+        content.insert(SCRIPTS_IDENTIFIER,cont)
+
+
+    global_path = os.path.join(templates,'base')
+    create_directory(global_path)
+    
+    txt = template_path.joinpath('global').joinpath('site_base.html').read_text()
+
+    with open(os.path.join(templates,'base','site_base.html'),'w') as f:
+        f.write(txt)
+
+    
+    with open(os.path.join(templates,'base','base.html'),'w') as f:
+        f.writelines(content)
+
+    # print(content)
+
+    
+        
+    
+def create_static_folders(project_name,project_directory,settings_path,create_core=True):
 
     to_append = """
 
@@ -76,7 +122,7 @@ STATICFILES_DIRS = [
 ]
 
 STATIC_URL = "/static/"
-STATIC_ROOT = "static/"
+STATIC_ROOT = "`static/"
 MEDIA_ROOT = BASE_DIR/'media/'
 MEDIA_URL = '/media/'
 
@@ -84,22 +130,35 @@ MEDIA_URL = '/media/'
 
     folder_to_create = ["staticfiles","static","media","templates"] # todo move to config
     static_sub_dirs = ['js','css','img'] # todo move to config
+    templates_sub_dirs = ['base']
+    
+    if create_core:
+        templates_sub_dirs.append("core")
 
-    static_path = ""
+    dirs = {}
+    print(project_directory) 
     for folder in folder_to_create:
         path = os.path.join(project_directory,folder)
-        if folder == "static":
-            static_path = path
-        os.mkdir(path)
+        dirs[folder] = path 
+        # static_path = path
+        create_directory(path)
+        # os.mkdir(path)
 
-    print(static_path)
+    # print(static_path)
         
     for folder in static_sub_dirs:
-        os.mkdir(os.path.join(static_path,folder))
+        create_directory(os.path.join(dirs['static'],folder))
+    
+    for folder in templates_sub_dirs:
+        create_directory(os.path.join(dirs['templates'],folder))
 
     with open(settings_path,'a') as settings:
         settings.write(to_append)
     
+    print(dirs)
+    return dirs
+
+
 def get_htmx(project_name,project_directory):
     
     HTMX_UNPKG_URL = "https://unpkg.com/htmx.org/dist/htmx.min.js" # todo move to configs
@@ -109,8 +168,8 @@ def get_htmx(project_name,project_directory):
     path = os.path.join(project_directory,"static",'js','htmx.min.js')
     with open(path,'w') as f:
         f.write(contents)
-    
 
+    return path
 
 
 def create_django_project(project_name,project_directory,project_type,django_version=None):
@@ -137,21 +196,28 @@ def create_django_project(project_name,project_directory,project_type,django_ver
     subprocess.run(create_project_command.split())
 
     print(f"Project is in {working_directory}")
-
+    
+    create_core = False
     create_core_app_prompt = input(f"{Fore.GREEN}Do You want to create a core app (default)[Y]es or [N]o: {Fore.WHITE}")
+
+    settings_path = os.path.join(working_directory,project_name,'settings.py')
+    dirs = create_static_folders(project_name,working_directory,settings_path,create_core)
+
+    dirs['setttings'] = settings_path
+    dirs['working_path'] = working_directory   
     if create_core_app_prompt in ["\n",''] or create_core_app_prompt.lower().startswith("y"):
         command = "python manage.py startapp core".split()
+        create_core = True
         subprocess.run(command,cwd=working_directory)
         
-        settings_path = os.path.join(working_directory,project_name,'settings.py')
 
-        installed_apps = get_file_values(settings_path,"INSTALLED_APPS")
+
+        installed_apps:List[Any] = get_file_values(settings_path,"INSTALLED_APPS")
         installed_apps.append('core')
         modify_or_add_setting(settings_path,"INSTALLED_APPS",installed_apps)
 
-    create_static_folders(project_name,working_directory,settings_path)
-    
-    return working_directory,settings_path
+
+    return dirs 
     
 
     
@@ -182,14 +248,22 @@ def main(args=None):
     print(f"initializing {project_name} at {project_directory}")
 
     # create the project
-    project_directory = create_django_project(project_name,project_directory,project_type)
+    dirs:Dict[str,str] = create_django_project(project_name,project_directory,project_type)
     print(f"Including addons to project")
-    
-    print(project_addons)
+    # print(project_addons)
+    static_statements = {
+        "head":[],
+        "scripts":[],
+    }
     for index in project_addons:
-        print(f"> Adding {PROJECT_ADDONS[index]}")
-        if PROJECT_ADDONS[index] == 'htmx':
-            get_htmx(project_name,project_directory[0])
+        
+        print(f"> Adding {index}")
+        if index == 'htmx':
+            p = get_htmx(project_name,dirs['working_path'])
+            static_statements["head"] += ["{% static 'js/htmx.min.js' %}\n"]
+    
+    create_base_template(project_name,dirs['templates'],project_addons,static_statements)
+
     # initializing project
 
     

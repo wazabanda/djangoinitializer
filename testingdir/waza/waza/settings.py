@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = (
-    'django-insecure-7#tgy2$1=dmj+o0u5#m1(6$1&=b81ecjqnu^x_tefnmn$l*ruh')
+    'django-insecure-o!h18u0ztzw65-h&*olm$x!51*z6a+k8fzw*xo#37u9ae&g1$c')
 DEBUG = True
 ALLOWED_HOSTS = []
 INSTALLED_APPS = ['django.contrib.admin', 'django.contrib.auth',
@@ -49,16 +49,9 @@ USE_I18N = True
 USE_TZ = True
 STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-
 import os
-STATICFILES_DIRS = [
-    BASE_DIR/"staticfiles",
-]
-
-STATIC_URL = "/static/"
-STATIC_ROOT = "static/"
-MEDIA_ROOT = BASE_DIR/'media/'
+STATICFILES_DIRS = [BASE_DIR / 'staticfiles']
+STATIC_URL = '/static/'
+STATIC_ROOT = '`static/'
+MEDIA_ROOT = BASE_DIR / 'media/'
 MEDIA_URL = '/media/'
-
-    
