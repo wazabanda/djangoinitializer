@@ -12,6 +12,7 @@ from pathlib import Path
 
 init(autoreset=True)
 
+# TODO: implement drf imlement dninja  
 
 ## variables
 project_name = None
