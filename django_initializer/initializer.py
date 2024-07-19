@@ -24,7 +24,7 @@ project_core_app_name = "core"
 
 PROJECT_TYPES = ["[d] default","[r] django rest framework", "[n] django ninja"]
 PROJECT_TYPES_INSTALS = ["_","djangorestframework","django-ninja"]
-PROJECT_ADDONS = ["none","django auth","django all-auth","htmx","tailwind","bootstrap"]
+PROJECT_ADDONS = ["none","django all-auth","htmx","tailwind (CDN)","alpine 3.x.x (CDN)","crispy_tailwind"]
 
 
 def create_directory(path):
@@ -123,7 +123,7 @@ STATICFILES_DIRS = [
 ]
 
 STATIC_URL = "/static/"
-STATIC_ROOT = "`static/"
+STATIC_ROOT = "static/"
 MEDIA_ROOT = BASE_DIR/'media/'
 MEDIA_URL = '/media/'
 
@@ -148,7 +148,7 @@ MEDIA_URL = '/media/'
     # print(static_path)
         
     for folder in static_sub_dirs:
-        create_directory(os.path.join(dirs['static'],folder))
+        create_directory(os.path.join(dirs['staticfiles'],folder))
     
     for folder in templates_sub_dirs:
         create_directory(os.path.join(dirs['templates'],folder))
@@ -259,10 +259,16 @@ def main(args=None):
     for index in project_addons:
         
         print(f"> Adding {index}")
-        if index == 'htmx':
-            p = get_htmx(project_name,dirs['working_path'])
-            static_statements["head"] += ["{% static 'js/htmx.min.js' %}\n"]
-    
+        # This following part is bad, make the configuration better going forward when everything works
+        if index.startswith('htmx'):
+            get_htmx(project_name,dirs['working_path'])
+            static_statements["head"] += ["<script src=\"{% static 'js/htmx.min.js' %}\"></script> \n"]
+        elif index.startswith("tailwind"):
+            static_statements["head"] += ["<script src='https://cdn.tailwindcss.com'></script>"]
+        elif index.startswith("alpine"):
+            static_statements["head"] += ["<script defer src='https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js'></script>"]
+
+
     create_base_template(project_name,dirs['templates'],project_addons,static_statements)
 
     # initializing project
