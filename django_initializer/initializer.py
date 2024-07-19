@@ -160,13 +160,28 @@ MEDIA_URL = '/media/'
     return dirs
 
 
+def add_crispy_forms(settings_path):
+    # Install crispy forms
+    print("Installing Crispy Dependencies")
+    cmd = "pip install django-cripsy-forms crispy-tailwind".split()
+    subprocess.run(cmd)
+    
+    installed_apps:List[Any] = get_file_values(settings_path,"INSTALLED_APPS")
+    installed_apps.append('crispy_forms')
+    installed_apps.append('crispy_tailwind')
+    modify_or_add_setting(settings_path,"INSTALLED_APPS",installed_apps)
+    modify_or_add_setting(settings_path,"CRISPY_ALLOWED_TEMPLATE_PACKS","tailwind")
+    modify_or_add_setting(settings_path,"CRISPY_TEMPLATE_PACK",'tailwind')
+
+
+
 def get_htmx(project_name,project_directory):
     
     HTMX_UNPKG_URL = "https://unpkg.com/htmx.org/dist/htmx.min.js" # todo move to configs
     print(f"f{Fore.YELLOW} {Style.BRIGHT} Adding HTMX You have amazing tastes!! {Fore.RESET} {Style.RESET_ALL}")
     contents = requests.get(HTMX_UNPKG_URL).text
 
-    path = os.path.join(project_directory,"static",'js','htmx.min.js')
+    path = os.path.join(project_directory,"staticfiles",'js','htmx.min.js')
     with open(path,'w') as f:
         f.write(contents)
 
@@ -256,18 +271,20 @@ def main(args=None):
         "head":[],
         "scripts":[],
     }
+    print(project_addons)
     for index in project_addons:
         
         print(f"> Adding {index}")
         # This following part is bad, make the configuration better going forward when everything works
         if index.startswith('htmx'):
             get_htmx(project_name,dirs['working_path'])
-            static_statements["head"] += ["<script src=\"{% static 'js/htmx.min.js' %}\"></script> \n"]
+            static_statements["head"] += ["\n<script src=\"{% static 'js/htmx.min.js' %}\"></script>"]
         elif index.startswith("tailwind"):
-            static_statements["head"] += ["<script src='https://cdn.tailwindcss.com'></script>"]
+            static_statements["head"] += ["\n<script src='https://cdn.tailwindcss.com'></script>"]
         elif index.startswith("alpine"):
-            static_statements["head"] += ["<script defer src='https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js'></script>"]
-
+            static_statements["head"] += ["\n<script defer src='https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js'></script>"]
+        elif index.startswith('crispy'):
+            add_crispy_forms(dirs['settings'])
 
     create_base_template(project_name,dirs['templates'],project_addons,static_statements)
 
