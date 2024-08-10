@@ -163,7 +163,7 @@ MEDIA_URL = '/media/'
 def add_crispy_forms(settings_path):
     # Install crispy forms
     print("Installing Crispy Dependencies")
-    cmd = "pip install django-cripsy-forms crispy-tailwind".split()
+    cmd = "pip install django-crispy-forms crispy-tailwind".split()
     subprocess.run(cmd)
     
     installed_apps:List[Any] = get_file_values(settings_path,"INSTALLED_APPS")
@@ -219,7 +219,7 @@ def create_django_project(project_name,project_directory,project_type,django_ver
     settings_path = os.path.join(working_directory,project_name,'settings.py')
     dirs = create_static_folders(project_name,working_directory,settings_path,create_core)
 
-    dirs['setttings'] = settings_path
+    dirs['settings'] = settings_path
     dirs['working_path'] = working_directory   
     if create_core_app_prompt in ["\n",''] or create_core_app_prompt.lower().startswith("y"):
         command = "python manage.py startapp core".split()
