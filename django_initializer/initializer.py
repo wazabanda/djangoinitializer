@@ -318,7 +318,7 @@ def main(args=None):
     create_base_template(project_name,dirs['templates'],project_addons,static_statements)
     
 
-    shutil.copy(str(template_path.joinpath("makefile")),os.path.join(dirs['working_path'],'api.py'))
+    shutil.copy(str(template_path.joinpath("makefile")),os.path.join(dirs['working_path'],'makefile'))
     
     print(f"Project created, cd into {dirs['working_path']} and run{Style.BRIGHT}{Fore.GREEN} \npython manage.py makemigrations\npython manage.py migrate or make migrations{Fore.RESET} {Style.RESET_ALL}")
 
