@@ -22,10 +22,12 @@ project_type = None
 project_core_app_name = "core"
 
 
-PROJECT_TYPES = ["[d] default","[r] django rest framework", "[n] django ninja"]
+# PROJECT_TYPES = ["[d] default","[r] django rest framework", "[n] django ninja"]
+PROJECT_TYPES = ["[d] default", "[n] django ninja"]
 PROJECT_TYPES_INSTALS = ["_","djangorestframework","django-ninja"]
 PROJECT_ADDONS = ["none","django all-auth","htmx","tailwind (CDN)","alpine 3.x.x (CDN)","crispy_tailwind"]
 
+template_path = resources.files("django_initializer").joinpath('templates')
 
 def create_directory(path):
     if not os.path.exists(path):
@@ -116,17 +118,14 @@ def create_base_template(project_name,templates,addons,addon_statements):
 def create_static_folders(project_name,project_directory,settings_path,create_core=True):
 
     to_append = """
-
 import os
 STATICFILES_DIRS = [
     BASE_DIR/"staticfiles",
 ]
-
 STATIC_URL = "/static/"
 STATIC_ROOT = "static/"
 MEDIA_ROOT = BASE_DIR/'media/'
 MEDIA_URL = '/media/'
-
     """
 
     folder_to_create = ["staticfiles","static","media","templates"] # todo move to config
@@ -214,29 +213,38 @@ def create_django_project(project_name,project_directory,project_type,django_ver
     print(f"Project is in {working_directory}")
     
     create_core = False
-    create_core_app_prompt = input(f"{Fore.GREEN}Do You want to create a core app (default)[Y]es or [N]o: {Fore.WHITE}")
+    # create_core_app_prompt = input(f"{Fore.GREEN}Do You want to create a core app (default)[Y]es or [N]o: {Fore.WHITE}")
 
     settings_path = os.path.join(working_directory,project_name,'settings.py')
     dirs = create_static_folders(project_name,working_directory,settings_path,create_core)
 
     dirs['settings'] = settings_path
     dirs['working_path'] = working_directory   
-    if create_core_app_prompt in ["\n",''] or create_core_app_prompt.lower().startswith("y"):
-        command = "python manage.py startapp core".split()
-        create_core = True
-        subprocess.run(command,cwd=working_directory)
-        
+    # if create_core_app_prompt in ["\n",''] or create_core_app_prompt.lower().startswith("y"):
+    print(f"{Fore.GREEN}Creating core app{Fore.WHITE}")
+    command = "python manage.py startapp core".split()
+    create_core = True
+    subprocess.run(command,cwd=working_directory)
 
-
-        installed_apps:List[Any] = get_file_values(settings_path,"INSTALLED_APPS")
-        installed_apps.append('core')
-        modify_or_add_setting(settings_path,"INSTALLED_APPS",installed_apps)
-
-
+    installed_apps:List[Any] = get_file_values(settings_path,"INSTALLED_APPS")
+    installed_apps.append('core')
+    modify_or_add_setting(settings_path,"INSTALLED_APPS",installed_apps)
+    dirs['core_path'] = os.path.join(working_directory,'core')
     return dirs 
     
 
-    
+ 
+def create_django_rest_project():
+    pass
+
+
+def create_django_ninja_project(app_path):
+
+    print(app_path)
+    django_ninja_api_file = template_path.joinpath("api.py")
+    django_ninja_api_auth = template_path.joinpath("api_auth.py")
+    django_ninja_api_models = template_path.joinpath("models.py")
+    django_ninja_core_api = template_path.joinpath("core").joinpath("api.py")
 
 
 def main(args=None):
@@ -271,9 +279,14 @@ def main(args=None):
         "head":[],
         "scripts":[],
     }
+    
+    # if project_type == 1:
+    #     create_django_rest_project()
+    if project_type == 1:
+        create_django_ninja_project(dirs['core_path'])
+
     print(project_addons)
     for index in project_addons:
-        
         print(f"> Adding {index}")
         # This following part is bad, make the configuration better going forward when everything works
         if index.startswith('htmx'):
@@ -285,7 +298,7 @@ def main(args=None):
             static_statements["head"] += ["\n<script defer src='https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js'></script>"]
         elif index.startswith('crispy'):
             add_crispy_forms(dirs['settings'])
-
+    
     create_base_template(project_name,dirs['templates'],project_addons,static_statements)
 
     # initializing project
