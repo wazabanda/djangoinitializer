@@ -177,7 +177,7 @@ def add_crispy_forms(settings_path):
 def get_htmx(project_name,project_directory):
     
     HTMX_UNPKG_URL = "https://unpkg.com/htmx.org/dist/htmx.min.js" # todo move to configs
-    print(f"f{Fore.YELLOW} {Style.BRIGHT} Adding HTMX You have amazing tastes!! {Fore.RESET} {Style.RESET_ALL}")
+    print(f"{Fore.YELLOW} {Style.BRIGHT} Adding HTMX You have amazing tastes!! {Fore.RESET} {Style.RESET_ALL}")
     contents = requests.get(HTMX_UNPKG_URL).text
 
     path = os.path.join(project_directory,"staticfiles",'js','htmx.min.js')
@@ -241,13 +241,16 @@ def create_django_rest_project():
 
 def create_django_ninja_project(app_paths,proj_name):
 
-    print(app_paths)
+    print(f"{Fore.GREEN}Addin Django Ninja to your project")
     django_ninja_api_file = template_path.joinpath('django-ninja').joinpath("api.py")
     django_ninja_api_auth = template_path.joinpath('django-ninja').joinpath("api_auth.py")
     django_ninja_api_models = template_path.joinpath('django-ninja').joinpath("models.py")
     django_ninja_core_api = template_path.joinpath('django-ninja').joinpath("core").joinpath("api.py")
-
-    print(str(django_ninja_core_api))
+    django_ninja_urls = template_path.joinpath('django-ninja').joinpath("urls.py")
+    
+    cmd = "pip install django-ninja".split()
+    subprocess.run(cmd)
+    
     with open(os.path.join(app_paths['core_path'],'models.py'),'a') as f:
         model_file = open(str(django_ninja_api_models),'r')
         f.writelines(model_file.readlines())
@@ -256,6 +259,7 @@ def create_django_ninja_project(app_paths,proj_name):
      
     shutil.copy(str(django_ninja_api_file),os.path.join(app_paths['main_app_path'],'api.py'))
     shutil.copy(str(django_ninja_api_auth),os.path.join(app_paths['main_app_path'],'api_auth.py'))
+    shutil.copy(str(django_ninja_urls),os.path.join(app_paths['main_app_path'],'urls.py'))
     shutil.copy(str(django_ninja_core_api),os.path.join(app_paths['core_path'],'api.py'))
 
 
@@ -312,6 +316,11 @@ def main(args=None):
             add_crispy_forms(dirs['settings'])
     
     create_base_template(project_name,dirs['templates'],project_addons,static_statements)
+    
+
+    shutil.copy(str(template_path.joinpath("makefile")),os.path.join(dirs['working_directory'],'api.py'))
+    
+    print(f"Project created, cd into {dirs['working_path']} and run{Style.BRIGHT}{Fore.GREEN} \npython manage.py makemigrations\npython manage.py migrate or make migrations{Fore.RESET} {Style.RESET_ALL}")
 
     # initializing project
 

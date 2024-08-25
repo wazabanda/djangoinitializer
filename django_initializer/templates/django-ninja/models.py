@@ -7,7 +7,6 @@ import string
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User,on_delete=models.PROTECT)
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='users')
 
 
 class ExpirableToken(models.Model):
