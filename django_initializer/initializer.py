@@ -25,14 +25,15 @@ project_core_app_name = "core"
 # PROJECT_TYPES = ["[d] default","[r] django rest framework", "[n] django ninja"]
 PROJECT_TYPES = ["[d] default", "[n] django ninja"]
 PROJECT_TYPES_INSTALS = ["_","djangorestframework","django-ninja"]
-PROJECT_ADDONS = ["none","django all-auth","htmx","tailwind (CDN)","alpine 3.x.x (CDN)","crispy_tailwind"]
+# PROJECT_ADDONS = ["none","django all-auth","htmx","tailwind (CDN)","alpine 3.x.x (CDN)","crispy_tailwind"]
+PROJECT_ADDONS = ["none","htmx","tailwind (CDN)","alpine 3.x.x (CDN)","crispy_tailwind"]
 
 template_path = resources.files("django_initializer").joinpath('templates')
 
 def create_directory(path):
     if not os.path.exists(path):
         os.mkdir(path)
-
+    
 
 def main_template_selection():
 
