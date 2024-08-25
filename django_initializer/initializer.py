@@ -230,6 +230,7 @@ def create_django_project(project_name,project_directory,project_type,django_ver
     installed_apps.append('core')
     modify_or_add_setting(settings_path,"INSTALLED_APPS",installed_apps)
     dirs['core_path'] = os.path.join(working_directory,'core')
+    dirs['main_app_path'] = os.path.join(working_directory,project_name)
     return dirs 
     
 
@@ -238,13 +239,24 @@ def create_django_rest_project():
     pass
 
 
-def create_django_ninja_project(app_path):
+def create_django_ninja_project(app_paths,proj_name):
 
-    print(app_path)
-    django_ninja_api_file = template_path.joinpath("api.py")
-    django_ninja_api_auth = template_path.joinpath("api_auth.py")
-    django_ninja_api_models = template_path.joinpath("models.py")
-    django_ninja_core_api = template_path.joinpath("core").joinpath("api.py")
+    print(app_paths)
+    django_ninja_api_file = template_path.joinpath('django-ninja').joinpath("api.py")
+    django_ninja_api_auth = template_path.joinpath('django-ninja').joinpath("api_auth.py")
+    django_ninja_api_models = template_path.joinpath('django-ninja').joinpath("models.py")
+    django_ninja_core_api = template_path.joinpath('django-ninja').joinpath("core").joinpath("api.py")
+
+    print(str(django_ninja_core_api))
+    with open(os.path.join(app_paths['core_path'],'models.py'),'a') as f:
+        model_file = open(str(django_ninja_api_models),'r')
+        f.writelines(model_file.readlines())
+        model_file.close()
+
+     
+    shutil.copy(str(django_ninja_api_file),os.path.join(app_paths['main_app_path'],'api.py'))
+    shutil.copy(str(django_ninja_api_auth),os.path.join(app_paths['main_app_path'],'api_auth.py'))
+    shutil.copy(str(django_ninja_core_api),os.path.join(app_paths['core_path'],'api.py'))
 
 
 def main(args=None):
@@ -265,7 +277,7 @@ def main(args=None):
         project_name = input(f"{Fore.GREEN}> --pname {Fore.WHITE} not set please enter a name for your project: ")
 
     print("Please Choose a django project type to initialize")
-
+    project_addons = []
     project_type = main_template_selection() 
     project_addons = select_project_addons()
 
@@ -283,7 +295,7 @@ def main(args=None):
     # if project_type == 1:
     #     create_django_rest_project()
     if project_type == 1:
-        create_django_ninja_project(dirs['core_path'])
+        create_django_ninja_project(dirs,project_name)
 
     print(project_addons)
     for index in project_addons:
